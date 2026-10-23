@@ -1,5 +1,5 @@
 [Unit]
-Description=nextjs-custom-domains host agent (nginx vhosts + Let's Encrypt)
+Description=nextjs-vps-custom-domains host agent (nginx vhosts + Let's Encrypt)
 After=network-online.target nginx.service
 Wants=network-online.target
 

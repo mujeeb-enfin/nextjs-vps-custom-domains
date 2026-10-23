@@ -18,7 +18,7 @@ function write(severity: Severity, body: string, attributes: Record<string, unkn
     SeverityText: severity,
     SeverityNumber: SEVERITY_NUMBER[severity],
     Body: body,
-    Resource: { "service.name": "nextjs-custom-domains", "log.source": source },
+    Resource: { "service.name": "nextjs-vps-custom-domains", "log.source": source },
     Attributes: { ...attributes, ...(stack ? { "exception.stacktrace": stack } : {}) },
   });
   process.stdout.write(`${line}\n`);

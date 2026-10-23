@@ -1,9 +1,10 @@
 {
-  "name": "nextjs-custom-domains",
+  "name": "nextjs-vps-custom-domains",
   "version": "0.1.0",
   "private": true,
-  "description": "Self-hosted custom domains for multi-tenant Next.js SaaS: CNAME + TXT verification, automatic Let's Encrypt certificates and per-domain nginx vhosts managed by a least-privilege host agent.",
+  "description": "Self-hosted custom domains for multi-tenant Next.js SaaS on your own VPS, EC2 or Azure VM: CNAME + TXT verification, automatic Let's Encrypt certificates and per-domain nginx vhosts managed by a least-privilege host agent.",
   "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/mujeeb-enfin/nextjs-vps-custom-domains.git" },
   "engines": {
     "node": ">=20.9"
   },

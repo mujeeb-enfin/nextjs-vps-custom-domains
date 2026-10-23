@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# Installs / updates the nextjs-custom-domains host agent. Idempotent: safe to
+# Installs / updates the nextjs-vps-custom-domains host agent. Idempotent: safe to
 # re-run after every deploy.
 #
 #   sudo ./agent/install.sh

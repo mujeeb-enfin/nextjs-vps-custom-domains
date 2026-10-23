@@ -50,8 +50,8 @@ If the server changes, update this one record and every tenant follows.
 ### 1.3 Run the app
 
 ```bash
-git clone https://github.com/<you>/nextjs-custom-domains.git /opt/nextjs-custom-domains
-cd /opt/nextjs-custom-domains
+git clone https://github.com/mujeeb-enfin/nextjs-vps-custom-domains.git /opt/nextjs-vps-custom-domains
+cd /opt/nextjs-vps-custom-domains
 cp .env.example .env && chmod 600 .env   # set NCD_*, POSTGRES_* and a strong POSTGRES_PASSWORD
 docker compose up -d --build
 curl -s http://127.0.0.1:3000/api/health

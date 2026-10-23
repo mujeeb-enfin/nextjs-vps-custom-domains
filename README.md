@@ -1,6 +1,10 @@
-# nextjs-custom-domains
+# nextjs-vps-custom-domains
 
-Self-hosted **custom domains for multi-tenant Next.js SaaS**. Your tenants connect
+[![CI](https://github.com/mujeeb-enfin/nextjs-vps-custom-domains/actions/workflows/ci.yml/badge.svg)](https://github.com/mujeeb-enfin/nextjs-vps-custom-domains/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+Self-hosted **custom domains for multi-tenant Next.js SaaS**, running on a server
+you control: any VPS, AWS EC2, Azure VM or Google Compute Engine. Your tenants connect
 their own domain (for example `shop.theircompany.com`). Ownership is proven with
 DNS, Let's Encrypt certificates are issued and renewed automatically, and each
 domain gets its own nginx vhost. A small host agent does the work, with a single
@@ -36,7 +40,7 @@ Requirements: a Linux VM with a public IP, ports 80/443 open to the internet,
 nginx, certbot, Node.js 20+ and Docker.
 
 ```bash
-git clone https://github.com/<you>/nextjs-custom-domains.git && cd nextjs-custom-domains
+git clone https://github.com/mujeeb-enfin/nextjs-vps-custom-domains.git && cd nextjs-vps-custom-domains
 cp .env.example .env            # fill in every value
 docker compose up -d --build    # app + Postgres + Redis (loopback only)
 curl -s http://127.0.0.1:3000/api/health          # {"status":"ok"}
