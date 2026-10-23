@@ -10,7 +10,7 @@ Thanks for helping. Issues and pull requests are welcome.
 - **UI.** Tailwind utilities with the tokens in `src/app/globals.css` (no raw colours in components), inline SVG icons only, a unique prefixed `id` on every interactive element (`cd_…` for the domains feature), and memoised components so a status change re-renders only the affected card.
 - **Files stay under 500 lines.** Split before that.
 - **Security-sensitive changes** (agent, `ncd-certctl`, sudoers, nginx templates, hostname validation, auth) need a test and a short threat note in the PR description.
-
+ 
 ## Workflow
 
 1. Fork, create a branch from `main`.
