@@ -1,0 +1,18 @@
+# Managed by ncd-agent. DO NOT EDIT.
+# Temporary vhost for {{HOSTNAME}}: serves only the Let's Encrypt HTTP-01
+# challenge while the first certificate is issued, then is replaced by the
+# HTTPS vhost (or removed if issuance fails).
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{HOSTNAME}};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root {{ACME_WEBROOT}};
+        default_type text/plain;
+    }
+    location / {
+        return 404;
+    }
+}

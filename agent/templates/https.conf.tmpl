@@ -1,0 +1,51 @@
+# Managed by ncd-agent. DO NOT EDIT. Regenerated on every provision.
+# Custom domain: {{HOSTNAME}}  (TLS: Let's Encrypt, cert-name {{CERT_NAME}})
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{HOSTNAME}};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root {{ACME_WEBROOT}};
+        default_type text/plain;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    # 'listen ... http2' (not 'http2 on;') so this also works on nginx before 1.25.1.
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name {{HOSTNAME}};
+
+    ssl_certificate     /etc/letsencrypt/live/{{CERT_NAME}}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{CERT_NAME}}/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache   shared:ncd_ssl:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    client_max_body_size 2M;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options    nosniff always;
+    add_header Referrer-Policy           strict-origin-when-cross-origin always;
+
+    limit_req  zone=ncd_req burst=40 nodelay;
+    limit_conn ncd_conn 30;
+
+    location / {
+        proxy_pass         http://{{UPSTREAM}};
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_buffering    off;
+    }
+}

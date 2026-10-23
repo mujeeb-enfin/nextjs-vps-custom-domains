@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A tenant of your SaaS. Replace with your own account/tenant model when integrating.
+model Owner {
+  id         String         @id @default(cuid())
+  name       String
+  /// Maximum number of custom domains this owner may connect.
+  maxDomains Int            @default(10)
+  createdAt  DateTime       @default(now())
+  apiKeys    ApiKey[]
+  domains    CustomDomain[]
+}
+
+/// Dashboard / API credentials. Only a SHA-256 hash of each key is stored.
+model ApiKey {
+  id        String    @id @default(cuid())
+  ownerId   String
+  /// First characters of the key, shown to identify it. Not a secret.
+  prefix    String
+  hash      String    @unique
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+  owner     Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+}
+
+model CustomDomain {
+  id                String    @id @default(cuid())
+  ownerId           String
+  /// Lowercase ASCII (punycode) hostname, no trailing dot.
+  hostname          String    @unique
+  /// pending_dns | verified | ssl_pending | active | active_external_ssl |
+  /// ssl_failed | dns_lost | removing
+  status            String    @default("pending_dns")
+  /// Published by the owner as the TXT value; not a secret.
+  verificationToken String
+  autoSsl           Boolean   @default(true)
+  /// Root domain (acmestore.com) vs subdomain (checkout.acmestore.com).
+  isApex            Boolean   @default(false)
+  verifiedAt        DateTime?
+  sslIssuedAt       DateTime?
+  sslExpiresAt      DateTime?
+  lastCheckedAt     DateTime?
+  lastError         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  owner             Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+/// Every custom-domain state change. Domain ownership decides which hostnames
+/// serve a tenant's pages, so the trail is security-relevant.
+model DomainAuditLog {
+  id        String   @id @default(cuid())
+  domainId  String
+  ownerId   String
+  actor     String
+  action    String
+  details   Json
+  ipAddress String
+  createdAt DateTime @default(now())
+
+  @@index([domainId])
+  @@index([ownerId, createdAt])
+}

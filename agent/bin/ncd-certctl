@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# ncd-certctl: the ONLY privileged entry point for ncd-agent.
+# Installed root-owned (0755) at /usr/local/sbin/ncd-certctl; sudoers allows the
+# agent to run exactly this file and nothing else. sudoers wildcards also match
+# spaces, so argument validation lives HERE, with strict regexes.
+#
+#   ncd-certctl nginx-test
+#   ncd-certctl nginx-reload
+#   ncd-certctl issue   <hostname> <email> <staging:true|false>
+#   ncd-certctl delete  <hostname>
+#   ncd-certctl expiry  <hostname>
+#
+# Platform domains come from root-owned /etc/ncd-agent/agent.env
+# (NCD_AGENT_PLATFORM_DOMAINS), never from the caller.
+# ------------------------------------------------------------------------------
+set -euo pipefail
+# Locale-independent, case-sensitive matching ([a-z] must not match A-Z).
+export LC_ALL=C
+shopt -u nocasematch
+
+HOST_RE='^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]$'
+EMAIL_RE='^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+WEBROOT=/var/www/ncd-acme
+PREFIX=ncd-
+ENV_FILE=/etc/ncd-agent/agent.env
+
+die() { echo "ncd-certctl: $*" >&2; exit 64; }
+
+PLATFORM_DOMAINS=$(sed -n 's/^NCD_AGENT_PLATFORM_DOMAINS=//p' "$ENV_FILE" | tr -d '[:space:]')
+[[ -n "$PLATFORM_DOMAINS" ]] || die "NCD_AGENT_PLATFORM_DOMAINS missing in $ENV_FILE"
+
+host_ok() {
+  local h="$1" p
+  [[ ${#h} -le 253 && "$h" =~ $HOST_RE ]] || die "invalid hostname"
+  [[ "$h" == "${h,,}" ]] || die "hostname must be lowercase"
+  IFS=',' read -ra platforms <<< "$PLATFORM_DOMAINS"
+  for p in "${platforms[@]}"; do
+    [[ "$h" == "$p" || "$h" == *."$p" ]] && die "platform hostname not allowed"
+  done
+  return 0
+}
+
+[[ $# -ge 1 ]] || die "missing command"
+cmd="$1"; shift
+
+case "$cmd" in
+  nginx-test)   [[ $# -eq 0 ]] || die "usage"; exec /usr/sbin/nginx -t -q ;;
+  nginx-reload) [[ $# -eq 0 ]] || die "usage"; exec /usr/bin/systemctl reload nginx ;;
+  issue)
+    [[ $# -eq 3 ]] || die "usage: issue <hostname> <email> <staging>"
+    host_ok "$1"
+    [[ "$2" =~ $EMAIL_RE ]] || die "invalid email"
+    [[ "$3" == "true" || "$3" == "false" ]] || die "staging must be true|false"
+    args=(certonly --webroot -w "$WEBROOT" --cert-name "${PREFIX}$1" -d "$1"
+          --non-interactive --agree-tos --email "$2" --keep-until-expiring
+          --key-type ecdsa --deploy-hook /opt/ncd-agent/bin/renew-hook)
+    [[ "$3" == "true" ]] && args+=(--staging)
+    exec /usr/bin/certbot "${args[@]}"
+    ;;
+  delete)
+    [[ $# -eq 1 ]] || die "usage: delete <hostname>"
+    host_ok "$1"
+    exec /usr/bin/certbot delete --cert-name "${PREFIX}$1" --non-interactive
+    ;;
+  expiry)
+    [[ $# -eq 1 ]] || die "usage: expiry <hostname>"
+    host_ok "$1"
+    exec /usr/bin/openssl x509 -noout -enddate -in "/etc/letsencrypt/live/${PREFIX}$1/cert.pem"
+    ;;
+  *) die "unknown command" ;;
+esac

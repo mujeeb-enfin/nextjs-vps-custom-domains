@@ -1,0 +1,22 @@
+{
+  "name": "ncd-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Host agent for nextjs-custom-domains: provisions per-domain nginx vhosts and Let's Encrypt certificates",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "renew-hook": "node dist/renew-hook.js"
+  },
+  "dependencies": {
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,54 @@
+# App + Postgres + Redis for a single host. The host agent runs on the HOST
+# (systemd), next to nginx, and reaches this Redis and app over 127.0.0.1.
+#
+#   cp .env.example .env   # fill in; DATABASE_URL/REDIS_URL are overridden below
+#   docker compose up -d --build
+#   sudo ./agent/install.sh
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-ncd}
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    # Loopback only: the host agent connects here; nothing else should.
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: [redis-data:/data]
+    restart: unless-stopped
+
+  migrate:
+    build: { context: ., target: build }
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-ncd}?schema=public
+    depends_on: { db: { condition: service_healthy } }
+    restart: "no"
+
+  app:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-ncd}?schema=public
+      REDIS_URL: redis://redis:6379
+    # Loopback only: host nginx is the public entry point.
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_started }
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  redis-data:

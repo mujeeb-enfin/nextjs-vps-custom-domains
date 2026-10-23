@@ -1,0 +1,9 @@
+# /etc/sudoers.d/ncd-agent, installed by install.sh (mode 0440, validated with visudo -c).
+#
+# The agent may run exactly ONE root command: the ncd-certctl wrapper. sudoers
+# wildcards also match spaces and extra arguments, so every argument is
+# validated inside the wrapper (strict hostname/email regexes, fixed certbot
+# flags, "ncd-" cert-name prefix) rather than with patterns here.
+
+Defaults:ncdagent !requiretty
+ncdagent ALL=(root) NOPASSWD: /usr/local/sbin/ncd-certctl

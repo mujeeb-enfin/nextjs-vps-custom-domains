@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+agent/node_modules/
+
+# build output
+.next/
+out/
+build/
+dist/
+agent/dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# generated Prisma client
+src/generated/
+
+# environment and secrets: never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# logs
+logs/
+*.log
+
+# test output
+coverage/
+playwright-report/
+test-results/
+playwright/.auth/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

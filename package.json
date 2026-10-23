@@ -1,0 +1,50 @@
+{
+  "name": "nextjs-custom-domains",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted custom domains for multi-tenant Next.js SaaS: CNAME + TXT verification, automatic Let's Encrypt certificates and per-domain nginx vhosts managed by a least-privilege host agent.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "db:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
+    "owner:create": "tsx scripts/create-owner.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
+    "ioredis": "^5.11.1",
+    "next": "^16.2.4",
+    "pg": "^8.20.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tldts": "^7.4.19"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^24",
+    "@types/pg": "^8",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.0",
+    "typescript": "^5",
+    "vitest": "^5.0.5"
+  }
+}

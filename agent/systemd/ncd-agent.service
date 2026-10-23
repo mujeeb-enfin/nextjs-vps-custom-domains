@@ -1,0 +1,29 @@
+[Unit]
+Description=nextjs-custom-domains host agent (nginx vhosts + Let's Encrypt)
+After=network-online.target nginx.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ncdagent
+Group=ncdagent
+EnvironmentFile=/etc/ncd-agent/agent.env
+WorkingDirectory=/opt/ncd-agent
+ExecStart=/usr/bin/node /opt/ncd-agent/dist/index.js
+Restart=on-failure
+RestartSec=5s
+
+# Security boundary: the agent runs unprivileged as ncdagent and can only
+# escalate through `sudo /usr/local/sbin/ncd-certctl`, which validates every
+# argument.
+#
+# No systemd filesystem/kernel sandboxing, on purpose: ProtectSystem,
+# ProtectHome, ProtectKernel*, LockPersonality and RestrictSUIDSGID imply
+# NoNewPrivileges=yes (which blocks sudo entirely) and also apply to the sudo'd
+# children. certbot must write /etc/letsencrypt, and `nginx -t` must open every
+# log file the host's nginx config references, wherever it lives.
+NoNewPrivileges=no
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
